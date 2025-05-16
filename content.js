@@ -42,7 +42,21 @@ if (window.skoolCatInitialized) {
       setTimeout(() => {
         console.log('Triggering search');
         
-        // Create and dispatch Enter key event
+        // Try to find the form
+        const form = searchBar.closest('form');
+        if (form) {
+          // Create and dispatch submit event
+          const submitEvent = new Event('submit', {
+            bubbles: true,
+            cancelable: true
+          });
+          form.dispatchEvent(submitEvent);
+          
+          // Also try direct form submission
+          form.submit();
+        }
+
+        // Also try pressing Enter as a fallback
         const enterEvent = new KeyboardEvent('keydown', {
           key: 'Enter',
           code: 'Enter',
@@ -97,7 +111,21 @@ if (window.skoolCatInitialized) {
       setTimeout(() => {
         console.log('Triggering search');
         
-        // Create and dispatch Enter key event
+        // Try to find the form
+        const form = searchBar.closest('form');
+        if (form) {
+          // Create and dispatch submit event
+          const submitEvent = new Event('submit', {
+            bubbles: true,
+            cancelable: true
+          });
+          form.dispatchEvent(submitEvent);
+          
+          // Also try direct form submission
+          form.submit();
+        }
+
+        // Also try pressing Enter as a fallback
         const enterEvent = new KeyboardEvent('keydown', {
           key: 'Enter',
           code: 'Enter',
