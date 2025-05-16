@@ -2,6 +2,7 @@
 if (window.skoolCatInitialized) {
   console.log('Skool Cat script already initialized, skipping');
 } else {
+  console.log('Initializing Skool Cat script');
   window.skoolCatInitialized = true;
 
   function findSearchBar() {
@@ -101,19 +102,36 @@ if (window.skoolCatInitialized) {
       
       // Set the value directly
       searchBar.value = "let there be cat";
+      console.log('Set search value');
       
-      // Dispatch input event
-      const inputEvent = new Event('input', { bubbles: true });
+      // Create and dispatch a more complete input event
+      const inputEvent = new InputEvent('input', {
+        bubbles: true,
+        cancelable: true,
+        data: "let there be cat",
+        inputType: "insertText",
+        composed: true
+      });
       searchBar.dispatchEvent(inputEvent);
       console.log('Dispatched input event');
+
+      // Also dispatch a change event
+      const changeEvent = new Event('change', {
+        bubbles: true,
+        cancelable: true
+      });
+      searchBar.dispatchEvent(changeEvent);
+      console.log('Dispatched change event');
       
-      // Small delay to ensure the input is processed
+      // Wait before triggering search
       setTimeout(() => {
         console.log('Triggering search');
         
         // Try to find the form
         const form = searchBar.closest('form');
         if (form) {
+          console.log('Found form, attempting form submission');
+          
           // Create and dispatch submit event
           const submitEvent = new Event('submit', {
             bubbles: true,
@@ -125,39 +143,56 @@ if (window.skoolCatInitialized) {
           form.submit();
         }
 
-        // Also try pressing Enter as a fallback
+        // Try pressing Enter as well
         const enterEvent = new KeyboardEvent('keydown', {
           key: 'Enter',
           code: 'Enter',
           keyCode: 13,
           which: 13,
           bubbles: true,
-          cancelable: true
+          cancelable: true,
+          composed: true
         });
         searchBar.dispatchEvent(enterEvent);
 
-        // Clear the search field after submission
+        // Clear the search field after a longer delay
         setTimeout(() => {
           console.log('Clearing search field');
           searchBar.value = '';
-          searchBar.dispatchEvent(inputEvent);
-        }, 100);
-        
-        console.log('Successfully triggered summon cat');
-      }, 100);
+          const clearInputEvent = new Event('input', { bubbles: true });
+          searchBar.dispatchEvent(clearInputEvent);
+        }, 500);
+
+        // Wait for the cat to appear and then try to activate it
+        setTimeout(() => {
+          console.log('Attempting to select metal music');
+          
+          // Create a more complete click event
+          const clickEvent = new MouseEvent('click', {
+            bubbles: true,
+            cancelable: true,
+            view: window,
+            composed: true
+          });
+          
+          // Try to find and click the metal music option
+          const metalOption = document.querySelector('div.styled__SkoolCatOption-sc-cfkgeq-2');
+          if (metalOption) {
+            console.log('Found metal music option, attempting to click');
+            metalOption.dispatchEvent(clickEvent);
+          } else {
+            console.log('Metal music option not found');
+          }
+        }, 1500); // Wait 1.5 seconds for the cat to appear
+      }, 1000); // Wait 1 second before triggering search
       
     } catch (error) {
       console.error('Error triggering summon cat:', error);
     }
   }
 
-  // Remove any existing message listeners
-  if (window.skoolCatMessageListener) {
-    chrome.runtime.onMessage.removeListener(window.skoolCatMessageListener);
-  }
-
-  // Create and store the message listener
-  window.skoolCatMessageListener = function(request, sender, sendResponse) {
+  // Create the message listener
+  const messageListener = function(request, sender, sendResponse) {
     console.log('Received message:', request);
     
     try {
@@ -180,6 +215,11 @@ if (window.skoolCatInitialized) {
     return true;
   };
 
+  // Store the listener reference
+  window.skoolCatMessageListener = messageListener;
+
   // Add the message listener
-  chrome.runtime.onMessage.addListener(window.skoolCatMessageListener);
+  chrome.runtime.onMessage.addListener(messageListener);
+  
+  console.log('Skool Cat script initialization complete');
 } 
