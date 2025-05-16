@@ -191,6 +191,164 @@ if (window.skoolCatInitialized) {
     }
   }
 
+  // Function to check if cat is present
+  function isCatPresent() {
+    return !!document.querySelector('div.styled__SkoolCatDropdown-sc-cfkgeq-0');
+  }
+
+  // Create and manage the toggle component
+  function createToggle() {
+    console.log('Creating toggle component...');
+    
+    // Remove any existing toggle
+    const existingToggle = document.getElementById('skool-cat-toggle');
+    if (existingToggle) {
+      console.log('Removing existing toggle');
+      existingToggle.remove();
+    }
+
+    // Find the target element to position relative to
+    const targetElement = document.querySelector('div[data-testid="input-component"]');
+    if (!targetElement) {
+      console.error('Could not find target element for toggle positioning');
+      return;
+    }
+
+    // Create the toggle container
+    const toggle = document.createElement('div');
+    toggle.id = 'skool-cat-toggle';
+    toggle.style.cssText = `
+      position: absolute;
+      background: white;
+      border-radius: 25px;
+      padding: 8px 16px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.3s ease;
+      z-index: 999999;
+      font-family: Arial, sans-serif;
+      font-size: 14px;
+      color: #333;
+      border: 1px solid #e0e0e0;
+      user-select: none;
+      right: -180px;
+      top: 50%;
+      transform: translateY(-50%);
+    `;
+
+    // Create the icon
+    const icon = document.createElement('div');
+    icon.style.cssText = `
+      width: 24px;
+      height: 24px;
+      background: #f0f0f0;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease;
+      font-size: 16px;
+    `;
+
+    // Create the text
+    const text = document.createElement('span');
+    text.style.cssText = `
+      padding-right: 8px;
+      white-space: nowrap;
+    `;
+
+    // Add hover effect
+    toggle.addEventListener('mouseover', () => {
+      toggle.style.transform = 'translateY(-50%) scale(1.05)';
+      toggle.style.boxShadow = '0 4px 15px rgba(0,0,0,0.3)';
+    });
+
+    toggle.addEventListener('mouseout', () => {
+      toggle.style.transform = 'translateY(-50%) scale(1)';
+      toggle.style.boxShadow = '0 2px 10px rgba(0,0,0,0.2)';
+    });
+
+    // Add click handler
+    toggle.addEventListener('click', () => {
+      console.log('Toggle clicked, cat present:', isCatPresent());
+      if (isCatPresent()) {
+        triggerShooCat();
+      } else {
+        triggerSummonCat();
+      }
+    });
+
+    // Function to update toggle state
+    function updateToggleState() {
+      const catPresent = isCatPresent();
+      console.log('Updating toggle state, cat present:', catPresent);
+      if (catPresent) {
+        toggle.style.background = '#ffebee';
+        icon.style.background = '#ffcdd2';
+        text.textContent = 'Shoo Cat';
+        icon.innerHTML = '🐱';
+      } else {
+        toggle.style.background = '#e8f5e9';
+        icon.style.background = '#c8e6c9';
+        text.textContent = 'Summon Cat';
+        icon.innerHTML = '✨';
+      }
+    }
+
+    // Add elements to toggle
+    toggle.appendChild(icon);
+    toggle.appendChild(text);
+
+    // Create a container for the toggle
+    const container = document.createElement('div');
+    container.style.cssText = `
+      position: relative;
+      display: inline-block;
+    `;
+
+    // Add the toggle to the container
+    container.appendChild(toggle);
+
+    // Insert the container after the target element
+    targetElement.parentNode.insertBefore(container, targetElement.nextSibling);
+
+    console.log('Toggle added to document');
+
+    // Initial state
+    updateToggleState();
+
+    // Set up observer to watch for cat presence changes with debounce
+    let debounceTimer;
+    const observer = new MutationObserver((mutations) => {
+      // Only process mutations that might affect the cat's presence
+      const relevantMutations = mutations.filter(mutation => {
+        return mutation.target.classList?.contains('styled__SkoolCatDropdown-sc-cfkgeq-0') ||
+               mutation.addedNodes.length > 0 ||
+               mutation.removedNodes.length > 0;
+      });
+
+      if (relevantMutations.length > 0) {
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(() => {
+          updateToggleState();
+        }, 100); // 100ms debounce
+      }
+    });
+
+    // Only observe the body for changes to the cat dropdown
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ['class']
+    });
+
+    return toggle;
+  }
+
   // Create the message listener
   const messageListener = function(request, sender, sendResponse) {
     console.log('Received message:', request);
@@ -220,6 +378,10 @@ if (window.skoolCatInitialized) {
 
   // Add the message listener
   chrome.runtime.onMessage.addListener(messageListener);
+
+  // Create the toggle immediately
+  console.log('Creating toggle immediately...');
+  createToggle();
   
   console.log('Skool Cat script initialization complete');
 } 
