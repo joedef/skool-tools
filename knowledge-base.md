@@ -1,136 +1,147 @@
-# MVP Blueprint: Skool Course‑Key Sharing Web App
+# MVP Blueprint: Skool Course-Key Sharing Web App
 
-**Executive Summary**
-This blueprint details a two‑week plan for a solo founder to launch a web‑ and mobile‑friendly directory where Skool.com creators can publish and discover shareable course keys. It prioritizes fast development with a **Next.js + Supabase** stack, ships only essential CRUD, search, and tagging features, and bakes in viral hooks like shareable pages and gamified leaderboards. A staged 14‑day sprint, clear success metrics, and mitigation strategies ensure that the MVP can go live quickly, attract early adopters from existing Skool and course‑creator communities, and scale smoothly to 10 × traffic without rewrites—setting the foundation for future monetization through promoted listings, sponsorships, and premium analytics.
-
----
-
-## 1 · User & Market Insights
-
-### Target personas & JTBD
-
-* **Experienced Course Creator (Sharer)** — wants recognition and to help peers by sharing proven course structures. *Viral lever:* promotes their listing to followers.
-* **Aspiring Course Builder (Seeker)** — needs ready‑made templates to jump‑start a new course. *Viral lever:* shares valuable finds with peers.
-* **Community Curator / Growth Hacker** — scouts trending templates to showcase or analyze. *Viral lever:* publishes “Top 10” lists that link back to the site.
-
-### Current hacks & pain points
-
-* Scattered forum posts or Google Sheets; no central search.
-* Template sales on Etsy/Gumroad behind paywalls.
-* Reliance on personal networks; no feedback or quality signals.
-
-### Initial outreach communities
-
-1. **Skool official & topical groups**
-2. **Facebook / Reddit course‑creator forums**
-3. **Indie Hackers & Product Hunt** makers
-4. **Skool affiliates / coaches** eager for new user incentives
+> **Goal**  Launch, in ≤14 days, a web- and mobile-friendly hub where Skool.com creators can **publish** and **discover** course-share keys.  Keep scope razor-thin but include viral hooks; build on a stack that scales 10× with zero rewrites.
 
 ---
 
-## 2 · Must‑Have vs WOW Features (MoSCoW)
+## Executive Summary
 
-| Feature / Capability             | Priority        | Effort   | Notes / Viral Hooks                                                    |
-| -------------------------------- | --------------- | -------- | ---------------------------------------------------------------------- |
-| User auth + profiles (Supabase)  | **Must**        |  ≈1 day  | Required to post; minimal friction; public profiles enable recognition |
-| Post a course‑share key          | **Must**        |  ≈2 days | Core CRUD; shareable detail URL                                        |
-| Browse list of keys              | **Must**        |  ≈1 day  | SEO‑indexable public page                                              |
-| Search by keyword                | **Must**        |  ≈1 day  | Postgres full‑text                                                     |
-| Tagging & filter                 | **Should**      |  ≈1 day  | Enables topic niches & viral tag links                                 |
-| Copy / import instructions       | **Should**      |  ≈½ day  | Reduces friction to use keys                                           |
-| Basic upvote / like              | **Could**       |  ≈1 day  | Social proof; prepares for trending list                               |
-| Leaderboard of top sharers       | **Could (WOW)** |  ≈2 days | Gamifies contributions; sharers brag externally                        |
-| Contributor badges               | **Could**       |  ≈2 days | Further gamification                                                   |
-| Social share buttons             | **Should**      |  ≈½ day  | One‑click virality                                                     |
-| Moderation / report              | **Should**      |  ≈1 day  | Protects quality & safety                                              |
-| Analytics dashboard              | **Should**      |  ≈1 day  | Track KPIs                                                             |
-| Comments, follows, notifications | **Won’t (v1)**  | —        | Nice‑to‑have, defer                                                    |
-| Any Skool API integration        | **Won’t**       | —        | Manual import only                                                     |
-| Monetization/payments            | **Won’t**       | —        | Focus on engagement first                                              |
+This blueprint details every element—personas, pain points, feature MoSCoW, data schema, 3-way stack comparison, 14-day sprint, KPIs, risks, and monetization options—needed for a solo founder to ship and grow the platform.  The **Balanced** stack (**Next.js + Supabase**) is recommended for its sweet spot of speed, SEO, and cost.  Viral accelerants include SEO-indexed listings, social share buttons, upvotes, and a public leaderboard.  After launch, revenue can emerge from featured listings, sponsorships, or premium analytics.
 
 ---
 
-## 3 · Technical Requirements
+## 1 · User & Market Insights
 
-### CRUD (CourseKeys)
+### 1.1 Personas, Jobs-To-Be-Done (JTBD) & Viral Levers
 
-* **Latency:** < 500 ms typical; 99 % uptime goal.
-* **10 × peak:** Tens of writes & thousands of reads/day—well within Supabase free/pro tiers.
-* **Schema:** `CourseKeys(id, title, description, share_key, tags[], author_id, created_at)`; `Users` profile table; optional `Likes`, `Reports`.
+| Persona                                 | Short Description                                             | JTBD                                                                        | Viral Lever                                                                                       |
+| --------------------------------------- | ------------------------------------------------------------- | --------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| **Experienced Course Creator (Sharer)** | Runs a thriving Skool community; has polished course content. | Showcase expertise & help peers by sharing course templates.                | Shares their listing on social media; competes on public leaderboard; sports a contributor badge. |
+| **Aspiring Course Builder (Seeker)**    | New(er) Skool user; wants to stand up a course fast.          | Find & import a proven template instead of building from scratch.           | When a template works, shares link in groups; may later become a Sharer.                          |
+| **Community Curator / Growth Hacker**   | Affiliate, marketer, or manager watching trends.              | Discover popular templates to curate “Top X” lists or teach best practices. | Publishes roundup posts (Reddit, X, newsletters) with links back to site.                         |
 
-### Search & Filter
+### 1.2 Current Hacks & Pain Points
 
-* Postgres full‑text on `title + description`; GIN index on `tags[]`.
-* < 1 s queries; scalable to \~100 k rows before requiring external search.
+* **Scattered sharing** – Keys buried in Skool threads, Discord chats, or Google Sheets; no search.
+* **External marketplaces** – Dozens of paid Skool templates on Etsy/Gumroad → fragmented, paywalled.
+* **Manual networking** – DM swaps; impossible to gauge quality; no feedback loops.
+* **Import confusion** – Newbies unsure how to use a key; friction lowers adoption.
 
-### Authentication
+### 1.3 Initial Outreach Communities
 
-* Supabase Auth (email magic‑link ± Google OAuth).
-* RLS policies so users only edit their content; admin flag for moderation.
-
-### Analytics
-
-* External (Plausible / GA) for traffic.
-* Optional `KeyEvents` table (`view`, `copy`, `like`) for trending logic.
-
----
-
-## 4 · Tech‑Stack Options
-
-| Approach                              | Dev Velocity    | Cost @ 10k MAU | SEO & SSR              | Ecosystem                |
-| ------------------------------------- | --------------- | -------------- | ---------------------- | ------------------------ |
-| **“Turbo Speed”** SPA + Supabase      | Fastest         | ≈ \$25/mo      | Weak SEO (client‑only) | Simple but limits growth |
-| **“Balanced”** Next.js + Supabase     | **Recommended** | ≈ \$50‑70/mo   | Good SEO via SSR/ISR   | Strong DX & scale        |
-| **“Enterprise‑ready”** micro‑services | Slow            | \$100‑300/mo   | Good                   | Overkill for solo MVP    |
-
-**Why Balanced?** Combines quick dev, SEO for organic virality, server routes for future features, and easy Supabase scaling.
+1. **Skool official & niche groups** – SEO-visible posts can also drive organic Google traffic.
+2. **Facebook / Reddit course-creator groups** – Target makers already evaluating Skool.
+3. **Indie Hackers & Product Hunt** – Amplify launch; attract builder-minded curators.
+4. **Skool affiliates / coaches** – They want freebies to entice sign-ups; can seed content.
 
 ---
 
-## 5 · Recommendation Logic
+## 2 · Must-Have vs WOW Features (MoSCoW)
 
-Next.js + Supabase lets a solo founder ship the core app in under two weeks while keeping pages crawlable for search‑driven growth. Built‑in auth, instant Postgres APIs, and Vercel edge caching handle a 10 × viral spike without rewrites. The stack is flexible for adding leaderboards, badges, or premium analytics later, and upgrades linearly (Supabase Pro tier, Vercel Pro) as the user base grows.
-
----
-
-## 6 · 14‑Day Delivery Plan
-
-| Day       | Focus & Key Tasks                                               |
-| --------- | --------------------------------------------------------------- |
-| **1‑2**   | Project scaffold, Supabase setup, hello‑world query             |
-| **3‑5**   | Build auth, post form, list view, detail page                   |
-| **6‑7**   | Implement search, tags, initial seed content                    |
-| **8**     | Friends‑&‑family beta, collect bug + UX feedback                |
-| **9‑10**  | Fixes, mobile polish, add likes or share buttons, add analytics |
-| **11**    | Write FAQ, prep launch posts, final content pass                |
-| **12**    | Public launch (Skool forum, FB groups, X, PH)                   |
-| **13‑14** | Triage feedback, patch bugs, measure KPIs                       |
-
-### Success metrics
-
-* Sign‑ups & **keys shared** (target ≥ 20 in week 1)
-* DAU/WAU & retention
-* Page‑share / referral traffic (viral coefficient)
-
-### Top risks & mitigations
-
-* **Empty library:** seed content pre‑launch
-* **Spam:** login‑gated posting, report button, manual moderation
-* **Scaling:** easy Supabase/Vercel upgrades
-* **Skool changes:** keep import manual, build rapport with Skool team
+| Feature / Capability               | Priority        | Effort (est.) | Viral / Rationale                              |
+| ---------------------------------- | --------------- | ------------- | ---------------------------------------------- |
+| **Supabase Auth + Profiles**       | **Must**        | ≈1 day        | Quick signup; tracks attribution.              |
+| **Post Course-Share Key (CRUD)**   | **Must**        | ≈2 days       | Core value; generates shareable detail URL.    |
+| **Browse / List Keys**             | **Must**        | ≈1 day        | Public SEO-indexed feed → organic traffic.     |
+| **Search by Keywords**             | **Must**        | ≈1 day        | Fast discovery of relevant templates.          |
+| **Tagging & Tag Filter**           | **Should**      | ≈1 day        | Topic pages; deep-linkable for viral shares.   |
+| **Key Detail Page + Copy Button**  | **Must**        | ≈1 day        | Clear “Copy & Import” CTA; high shareability.  |
+| **Copy / Import Instructions**     | **Should**      | ≈0.5 day      | Lowers friction → more success stories.        |
+| **Upvote / Like**                  | **Could**       | ≈1 day        | Social proof; powers “trending.”               |
+| **Leaderboard of Top Sharers**     | **Could (WOW)** | ≈2 days       | Gamifies contributions; sparks self-promotion. |
+| **Contributor Badges**             | **Could**       | ≈2 days       | Status symbols; encourages sharing.            |
+| **Social Share Buttons**           | **Should**      | ≈0.5 day      | One-click virality.                            |
+| **Moderation / Report Flag**       | **Should**      | ≈1 day        | Maintains quality & trust.                     |
+| **Analytics Dashboard (Admin)**    | **Should**      | ≈1 day        | Tracks KPIs; informs iterations.               |
+| Comments / follows / notifications | **Won’t**       | –             | Future engagement layer.                       |
+| Direct Skool API integration       | **Won’t**       | –             | Manual import only (no official API).          |
+| Monetization / payments            | **Won’t**       | –             | Focus on growth first.                         |
 
 ---
 
-## 7 · Appendix
+## 3 · Technical Requirements
 
-### Skool context
+### 3.1 CRUD Slice
 
-* No public API; sharing keys is manual & TOS‑compliant.
-* Analog: Canvas LMS “Commons” shows demand for template hubs.
+* **Schema** `CourseKeys(id UUID, title text, description text, share_key text, tags text[], author_id UUID → Users.id, created_at timestamp)`
+* **Indexes** full-text (`title, description`), GIN on `tags[]`.
+* **Targets** <500 ms queries, 99 % uptime.
+* **10× Viral Peak** ≈200 inserts + 1 k reads/hr → well under Supabase Pro capacity.
 
-### Early monetization ideas
+### 3.2 Search & Filter
 
-1. **Promoted listings / featured tags**
-2. **Community sponsorships / newsletter slots**
-3. **Premium analytics & trend reports**
-4. (Later) Paid template marketplace with revenue‑share
+* Postgres Full-Text Search; combine with tag filter (`WHERE tags @> '{marketing}'`).
+* Sub-1 s response until >100 k rows; then consider Algolia/Meili.
+
+### 3.3 Authentication & Profiles
+
+* Supabase email magic-link + optional Google OAuth.
+* RLS policies: users touch only their rows; founder flagged as admin.
+* `Profiles(user_id PK, name, avatar_url, bio, join_date)`.
+
+### 3.4 Analytics & Events
+
+* External traffic analytics (Plausible/GA).
+* Optional table `KeyEvents(id, key_id, user_id?, event_type, ts)` for views, copies, likes.
+
+---
+
+## 4 · Tech-Stack Comparison
+
+| Approach                        | Dev Velocity | Cost @10 k MAU | SEO / SSR            | Notes                                           |
+| ------------------------------- | ------------ | -------------- | -------------------- | ----------------------------------------------- |
+| **Turbo** SPA + Supabase        | ⚡ Fastest    | ≈\$25-50/mo    | Weak SEO             | Pure client; limits organic growth.             |
+| **Balanced** Next.js + Supabase | **✅ High**   | ≈\$50-70/mo    | Strong SEO (ISR/SSR) | **Recommended** – best mix of speed + virality. |
+| Enterprise Micro-services       | 🐢 Slow      | \$100-300/mo   | Strong SEO           | Overkill for solo MVP.                          |
+
+**Balanced Wins**: SSR for crawlable pages, API routes for upgrades, minimal DevOps overhead, linear scaling via Supabase/Vercel plan bumps.
+
+---
+
+## 5 · 14-Day Delivery Sprint Plan
+
+| Day       | Focus                                                           | Deliverable / Milestone          |
+| --------- | --------------------------------------------------------------- | -------------------------------- |
+| **1-2**   | Project scaffold (Next.js), Supabase project, schema, auth test | “Hello DB” query ✅               |
+| **3-5**   | Build: signup/login, post form, list page, detail page          | End-to-end CRUD ✅                |
+| **6-7**   | Add search, tag filter; seed 10 real/dummy keys                 | MVP feature-complete             |
+| **8**     | Friends-&-Family beta                                           | Collect bugs + UX feedback       |
+| **9-10**  | Fixes; add social share & likes; integrate analytics            | Viral hooks live                 |
+| **11**    | Write FAQ, prepare launch copy/screens                          | Launch assets ready              |
+| **12**    | Public launch (Skool forum, FB, Reddit, X, Product Hunt)        | Site live; monitor spike         |
+| **13-14** | Bug-fix, KPI review, minor UX tweaks                            | v1.0 stable; next-sprint backlog |
+
+### KPIs to Track
+
+* **Creators signed up** & **keys shared** (goal ≥ 20 in week 1)
+* **DAU / WAU**, retention %
+* **Share-origin traffic** (referrals from social/forums)
+
+### Top Risks → Mitigations
+
+| Risk                     | Mitigation                                              |
+| ------------------------ | ------------------------------------------------------- |
+| Empty library            | Seed templates pre-launch; spotlight requested topics.  |
+| Spam / low-quality posts | Login-gated posting; report button; manual moderation.  |
+| Sudden scaling           | Upgrade Supabase & Vercel tiers; enable ISR caching.    |
+| Skool policy change      | Manual import model; maintain dialogue with Skool team. |
+
+---
+
+## 6 · Appendix
+
+### 6.1 Skool Context
+
+* No public API; sharing keys is TOS-friendly.
+* Analogy: Canvas LMS “Commons” validates demand for template hubs.
+
+### 6.2 Early Monetization Ideas
+
+1. **Promoted / Featured listings** (premium tags or homepage spotlight)
+2. **Sponsorship banners & newsletter slots**
+3. **Creator analytics dashboard** (import counts, trending searches)
+4. **Future:** Paid-template marketplace w/ Stripe & rev-share
+
+---
+
+> **Action Item:** Kick off Day-1 tasks—spin up Supabase, create `CourseKeys` & `Profiles` tables, and push initial Next.js repo to Vercel.
