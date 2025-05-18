@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Sheets API</title>
+  <style>
+    body {
+      width: 350px;
+      padding: 15px;
+      font-family: Arial, sans-serif;
+    }
+    h1 {
+      font-size: 18px;
+      margin-bottom: 15px;
+    }
+    .form-group {
+      margin-bottom: 10px;
+    }
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+    select, input[type="text"] {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      box-sizing: border-box;
+      margin-bottom: 10px;
+    }
+    textarea {
+      width: 100%;
+      height: 100px;
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      box-sizing: border-box;
+      resize: vertical;
+    }
+    button {
+      width: 100%;
+      padding: 10px;
+      background-color: #4285f4;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      margin-bottom: 10px;
+    }
+    button:hover {
+      background-color: #3367d6;
+    }
+    button:disabled {
+      background-color: #ccc;
+      cursor: not-allowed;
+    }
+    #status {
+      margin-top: 10px;
+      padding: 10px;
+      border-radius: 4px;
+      display: none;
+    }
+    .success {
+      background-color: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+    .error {
+      background-color: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+    .sheet-info {
+      margin-top: 10px;
+      padding: 10px;
+      background-color: #f8f9fa;
+      border-radius: 4px;
+      font-size: 12px;
+    }
+    .tabs {
+      display: flex;
+      margin-bottom: 15px;
+      border-bottom: 1px solid #ddd;
+    }
+    .tab {
+      padding: 8px 16px;
+      cursor: pointer;
+      border: 1px solid transparent;
+      border-bottom: none;
+      margin-right: 5px;
+      border-radius: 4px 4px 0 0;
+    }
+    .tab.active {
+      background-color: #4285f4;
+      color: white;
+    }
+    .tab-content {
+      display: none;
+    }
+    .tab-content.active {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <h1>Google Sheets Manager</h1>
+  
+  <div class="tabs">
+    <div class="tab active" data-tab="existing">Existing Sheets</div>
+    <div class="tab" data-tab="new">New Sheet</div>
+  </div>
+
+  <div id="existing-sheets" class="tab-content active">
+    <div class="form-group">
+      <label for="sheetSelect">Select Sheet:</label>
+      <select id="sheetSelect">
+        <option value="">Loading sheets...</option>
+      </select>
+    </div>
+    <div class="sheet-info" id="sheetInfo" style="display: none;">
+      <strong>Sheet Details:</strong>
+      <div id="sheetDetails"></div>
+    </div>
+    <div class="form-group">
+      <label for="appendData">Data to Append (CSV format):</label>
+      <textarea id="appendData" placeholder="Enter data in CSV format&#10;Example:&#10;John,30,New York&#10;Jane,25,London"></textarea>
+    </div>
+    <button id="appendToSheet">Append to Sheet</button>
+  </div>
+
+  <div id="new-sheet" class="tab-content">
+    <div class="form-group">
+      <label for="sheetName">New Sheet Name:</label>
+      <input type="text" id="sheetName" placeholder="Enter sheet name">
+    </div>
+    <div class="form-group">
+      <label for="newData">Initial Data (CSV format):</label>
+      <textarea id="newData" placeholder="Enter data in CSV format&#10;Example:&#10;Name,Age,City&#10;John,30,New York&#10;Jane,25,London"></textarea>
+    </div>
+    <button id="createSheet">Create Sheet</button>
+  </div>
+
+  <div id="status"></div>
+  <script src="popup.js"></script>
+</body>
+</html>
